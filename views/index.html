@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Event Stream</title>
+    <style>
+        .wrapper {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+        }
+
+        .content {
+            padding: 1rem;
+            max-width: 18rem;
+            margin: 0 auto;
+            outline: 1px solid slateblue;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="content">
+            <h1>Real-time SSE</h1>
+            <div id="content"> </div>
+        </div>
+    </div>
+</body>
+<script>
+    const content = document.getElementById("content");
+    const sse = new EventSource("/events");
+
+    sse.onmessage = function (event) {
+        const p = document.createElement("p");
+        p.innerText = event.data;
+        content.removeChild(content.childNodes[0]);
+        content.appendChild(p);
+    };
+
+    sse.onerror = function (err) {
+        console.error(err);
+    };
+</script>
+
+</html>
