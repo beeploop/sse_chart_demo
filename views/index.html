@@ -12,37 +12,60 @@
             display: grid;
             place-items: center;
         }
-
-        .content {
-            padding: 1rem;
-            max-width: 18rem;
-            margin: 0 auto;
-            outline: 1px solid slateblue;
-            text-align: center;
-        }
     </style>
 </head>
 
 <body>
     <div class="wrapper">
-        <div class="content">
-            <h1>Real-time SSE</h1>
-            <div id="content"> </div>
+        <div>
+            <canvas id="chart"></canvas>
         </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </div>
 </body>
 <script>
-    const content = document.getElementById("content");
-    const sse = new EventSource("/events");
+    const ctx = document.getElementById("chart")
 
-    sse.onmessage = function (event) {
-        const p = document.createElement("p");
-        p.innerText = event.data;
-        content.removeChild(content.childNodes[0]);
-        content.appendChild(p);
+    const chart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Gradifier",
+                data: [],
+                backgroundColor: [
+                    "rgb(255, 99, 132)",
+                    "rgb(54, 162, 235)",
+                    "rgb(255, 205, 86)"
+                ],
+                hoverOffset: 4
+            }],
+        },
+    });
+
+    function updateChart(chart, labels, newData) {
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = newData;
+        chart.update();
+    }
+
+    const source = new EventSource("/events");
+
+    source.onmessage = function (event) {
+        try {
+            console.log(event.data);
+            const data = JSON.parse(event.data);
+            const chartLabels = Object.keys(data);
+            const chartData = Object.values(data);
+            console.log(chartLabels);
+            console.log(chartData);
+            updateChart(chart, chartLabels, chartData);
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    sse.onerror = function (err) {
+    source.onerror = function (err) {
         console.error(err);
     };
 </script>
